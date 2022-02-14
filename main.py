@@ -1,8 +1,6 @@
-# Get the weather and rain of brazilian cities
 # Imports
 import requests
 from bs4 import BeautifulSoup
-import os
 import unidecode
 
 def clean_text(dirty_city_name):
@@ -13,38 +11,30 @@ def clean_text(dirty_city_name):
     return city
 
 def get_weather(city):
-    # Get the weather and rain percentage
-    # Counter
-    i = 0
+    # Get the weather and info about the day
+    # Headers
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36 OPR/83.0.4254.27'}
     # Make and go to url
     url = f'https://www.tempo.com/{city}.htm'
-    page = requests.get(url)
+    page = requests.get(url, headers=headers)
 
     # Html page to BeautifulSoup
     soup = BeautifulSoup(page.text, 'html.parser')
-    texts = soup.find_all('div')
 
     # Find the informations
-    for text in texts:   
-        if text.get_text().count('Sensação Térmica') == 1:
-            dirty_text = text.get_text().split(' ')
+    title = soup.find_all('h1', class_='titulo')[0]
 
-            # Get weather and rain values
-            for word in dirty_text:
-                if word == 'Chuva':
-                    rain = dirty_text[i+2]
-                elif word == 'Térmica':
-                    weather = dirty_text[i+2]
-                i += 1
+    weather = soup.find_all('span', class_='dato-temperatura changeUnitT')[0]
 
-            # Clean prompt
-            os.system('cls')
+    info = soup.find_all('span', class_='datos')[4]
 
-            # Print informations
-            return print(
-                f'Cidade: {city}\n',
-                f'Temperatura: {weather}°C\n',
-                f'Probabilidade de chuva: {rain}')
+    return print(
+        f'{title.text}\n\n'
+        f'Temperatura: {weather.text}\n',
+        f'{info.text}'
+    )
+
+    
 
 city_name = ''       
 while city_name != 'exit':
